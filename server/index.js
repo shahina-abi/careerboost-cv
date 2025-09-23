@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-//import userRoutes from "./routes/userRoutes.js";
+import router from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "./config/db.js";
@@ -13,12 +13,14 @@ app.use(express.json());
 app.use(cookieParser());
 connectDB();
 
-//app.use("/api",routes);
+app.use("/api",router);
 
-app.get("/", (req,res) => {
-    res.json({msg:"hello"});
+// Root test route
+app.get("/", (req, res) => {
+  res.json({ msg: "CareerBoost API is running..." });
 });
 
+// Handle 404
 app.use((req,res,next) => {
     res.status(404).json({error:"Not found"});
 });
