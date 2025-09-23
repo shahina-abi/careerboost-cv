@@ -1,10 +1,8 @@
-
 import express from "express";
-import userRoutes from "./v1/userRoutes.js";
+import v1Router from "./v1/index.js";
 
 const router = express.Router();
 
-// Mount versioned routes
-router.use("/v1/users", userRoutes);
+router.use("/v1", v1Router);
 
 export default router;
