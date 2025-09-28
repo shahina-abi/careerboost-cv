@@ -4,6 +4,6 @@ import cvRoutes from './CvRoutes.js'
 
 const v1router = express.Router();
 v1router.use("/users", userRouter);
-v1router.use("/api/cv", cvRoutes)
+v1router.use("/cv", cvRoutes)
 
 export default v1router;

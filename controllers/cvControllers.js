@@ -1,8 +1,10 @@
-import {User} from "../models/userModel";
+import User from "../models/userModel.js";
 
 export const uploadCV = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "Please upload a CV file" });
+    if (!req.file) {
+      return res.status(400).json({ error: "Please upload a CV file" });
+    }
 
     // Save CV path in user's document
     req.user.cv = req.file.path;
