@@ -2,7 +2,7 @@ import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import {generateToken} from "../utils/token.js";
 
-//create account
+
 export const userSignup= async (req, res) => {
     try {
         const { name, email,mobile ,password } = req.body;
