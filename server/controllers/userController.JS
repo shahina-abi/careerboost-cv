@@ -8,7 +8,7 @@ export const userSignup= async (req, res) => {
         const { name, email,mobile ,password } = req.body;
 
 
-        if (!name || !email || !mobile || !password ) {
+        if (!name || !email  ) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -107,4 +107,34 @@ export const  userLogout = async (req, res) => {
         console.log(error);
         res.status(error.status || 500).json({ error: error.message || "Internal server Error" });
     }
+};
+export const deleteAccount = async (req, res) => {
+  try {
+    
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized, token missing" });
+    }
+
+    
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    
+    const user = await User.findByIdAndDelete(decoded.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    
+    res.clearCookie("token");
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
