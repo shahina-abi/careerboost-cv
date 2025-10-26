@@ -4,17 +4,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react"; // For mobile icons
-import logo from "@/assets/images/logo.png"; // Make sure this path exists
+import { Menu, X } from "lucide-react";
+import logo from "@/assets/images/logo.png";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="w-full py-4 px-6 md:px-20  absolute top-0 left-0 z-50">
+    <header className="w-full py-4 px-6 md:px-20 absolute top-0 left-0 z-50">
       <div className="flex justify-between items-center">
-        {/* Logo */}
-        <Link href="/" className="flex items-center ">
+        <Link href="/" className="flex items-center">
           <Image
             src={logo}
             alt="CareerBoost Logo"
@@ -23,10 +22,10 @@ const Navbar: React.FC = () => {
             className="rounded-full"
             priority
           />
-          <h1 className="text-blue-600 text-2xl font-bold">CareerBoost</h1>
+          <h1 className="text-blue-600 text-2xl font-bold ml-2">CareerBoost</h1>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Nav */}
         <nav className="hidden md:flex gap-10 text-lg font-semibold">
           <Link href="/" className="text-blue-600 hover:text-blue-800 transition">
             Home
@@ -39,7 +38,7 @@ const Navbar: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Desktop Auth Buttons */}
+        {/* Auth Buttons */}
         <div className="hidden md:flex gap-4">
           <Link
             href="/auth/login"
@@ -55,7 +54,7 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu */}
         <button
           className="md:hidden p-2"
           onClick={() => setIsOpen(!isOpen)}
@@ -65,28 +64,16 @@ const Navbar: React.FC = () => {
         </button>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Dropdown */}
       {isOpen && (
         <div className="md:hidden mt-4 bg-white shadow-md rounded-lg p-4 flex flex-col gap-4 text-center">
-          <Link
-            href="/"
-            className="text-blue-600 font-semibold hover:text-blue-800"
-            onClick={() => setIsOpen(false)}
-          >
+          <Link href="/" onClick={() => setIsOpen(false)} className="text-blue-600 font-semibold hover:text-blue-800">
             Home
           </Link>
-          <Link
-            href="/about"
-            className="hover:text-blue-800"
-            onClick={() => setIsOpen(false)}
-          >
+          <Link href="/about" onClick={() => setIsOpen(false)} className="hover:text-blue-800">
             About
           </Link>
-          <Link
-            href="/contact"
-            className="hover:text-blue-800"
-            onClick={() => setIsOpen(false)}
-          >
+          <Link href="/contact" onClick={() => setIsOpen(false)} className="hover:text-blue-800">
             Contact
           </Link>
           <div className="flex flex-col gap-3 mt-3">

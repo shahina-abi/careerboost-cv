@@ -1,6 +1,6 @@
 export default function CTASection() {
   return (
-    <section className="bg-white py-20 text-center">
+    <section className="bg-white py-20 text-center" id="upload">
       <h2 className="text-2xl font-bold mb-6">
         Ready to land your <span className="text-blue-600">dream job?</span>
       </h2>

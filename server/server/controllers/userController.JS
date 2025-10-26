@@ -5,10 +5,10 @@ import {generateToken} from "../utils/token.js";
 
 export const userSignup= async (req, res) => {
     try {
-        const { name, email,mobile ,password } = req.body;
+        const { name, email,password } = req.body;
 
 
-        if (!name || !email  ) {
+        if (!name || !email || !password ) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -24,9 +24,10 @@ export const userSignup= async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            mobile,
+           
           
         });
+        
 
         const savedUser = await newUser.save();
 
