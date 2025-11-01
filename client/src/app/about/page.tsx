@@ -6,7 +6,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Navbar */}
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* Hero Section */}
       <section className="py-32 px-6 sm:px-8 lg:px-12">

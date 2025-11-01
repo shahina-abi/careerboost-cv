@@ -5,7 +5,7 @@ import { Phone, Mail, MapPin } from "lucide-react";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800 mt-10">
       {/* Header Section */}
       <section className="text-center py-16 px-6">
         <h1 className="text-4xl md:text-5xl font-bold mb-8 text-indigo-700">

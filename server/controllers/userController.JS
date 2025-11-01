@@ -62,6 +62,7 @@ export const userLogin = async (req, res) => {
 
     res.json({
       message: "Login successful",
+      token,
       user: { id: user._id, name: user.name, email: user.email, mobile: user.mobile },
     });
   } catch (err) {
@@ -74,7 +75,7 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
-    res.json(user);
+     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

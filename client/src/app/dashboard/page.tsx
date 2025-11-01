@@ -63,24 +63,10 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-12">
-        <div className="flex items-center gap-3">
-          <Image
-            src={logo}
-            alt="CareerBoost Logo"
-            width={50}
-            height={50}
-            className="rounded-full"
-            priority
-          />
-          <h1 className="text-2xl font-bold text-blue-600">CareerBoost</h1>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-gray-50 mt-10 p-6 md:p-12">
+      
       {/* Dashboard Card */}
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+      <div className="max-w-3xl mx-auto bg-white  shadow-lg rounded-xl overflow-hidden border border-gray-200">
         <div className="bg-blue-600 p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">
             Welcome, {user?.name}!

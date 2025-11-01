@@ -7,8 +7,8 @@ const userRouter = express.Router();
 userRouter.post("/login", userLogin);
 userRouter.post("/signup", userSignup);
 userRouter.post("/logout", userLogout);
-userRouter.get("/profile", authUser, getProfile);
+userRouter.get("/me", authUser, getProfile);
 userRouter.put("/edit", authUser, editProfile);
-userRouter.delete('/delet',deleteAccount)
+userRouter.delete('/delete',deleteAccount)
 
 export default userRouter;
