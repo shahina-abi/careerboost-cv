@@ -8,7 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF } from "react-icons/fa";
 import logo from "@/assets/images/logo.png";
 
-export default function RegisterPage() {
+export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",

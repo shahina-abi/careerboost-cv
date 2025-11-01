@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Next.js build
+.next/
+client/.next/
+
+# Environment
+.env
+client/.env
+
+# Logs and cache
+*.log
+.cache/
