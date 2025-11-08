@@ -1,115 +1,172 @@
+
 "use client";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import logo from "@/assets/images/logo.png";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+import { useState } from "react";
+import { FaUpload, FaBriefcase } from "react-icons/fa";
 
-export default function UserDashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+export default function DashboardPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [error, setError] = useState("");
+  const [expandedJob, setExpandedJob] = useState<number | null>(null);
 
-  useEffect(() => {
-    // ✅ Get token from localStorage
-    const token = localStorage.getItem("token");
+  // Upload & analyze CV
+  const handleUpload = async () => {
+    if (!file) return setError("Please upload your CV (.docx or .pdf).");
 
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
+    setError("");
+    setUploading(true);
+    setKeywords([]);
+    setJobs([]);
 
-    // ✅ Fetch user info from backend
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/v1/users/me", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const formData = new FormData();
+      formData.append("cv", file);
 
-        if (!res.ok) throw new Error("Failed to fetch user data");
+      // Upload CV
+      const res = await fetch("http://localhost:3001/api/v1/cv/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "CV upload failed");
 
-        const data = await res.json();
-        setUser({
-          id: data.user._id,
-          name: data.user.name,
-          email: data.user.email,
-        });
-      } catch (err) {
-        console.error(err);
-        localStorage.removeItem("token");
-        router.push("/auth/login");
-      } finally {
-        setLoading(false);
+      const cvKeywords = data.keywords || [];
+      setKeywords(cvKeywords);
+
+      // Get related jobs
+      if (cvKeywords.length > 0) {
+        const jobRes = await fetch(
+          `http://localhost:3001/api/v1/jobs?query=${encodeURIComponent(cvKeywords[0])}`
+        );
+        const jobData = await jobRes.json();
+        if (!jobRes.ok) throw new Error(jobData.error || "Failed to fetch jobs");
+
+        setJobs(jobData.results || []);
+      } else {
+        setError("No relevant skills found in your CV.");
       }
-    };
-
-    fetchUser();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-blue-600 font-semibold text-lg">Loading...</p>
-      </div>
-    );
-  }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-10 p-6 md:p-12">
-      
-      {/* Dashboard Card */}
-      <div className="max-w-3xl mx-auto bg-white  shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        <div className="bg-blue-600 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">
-            Welcome, {user?.name}!
-          </h2>
-          <div className="bg-white rounded-full p-2">
-            <Image
-              src={logo}
-              alt="User Avatar"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center py-20 px-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-4xl">
+        <h1 className="text-3xl font-bold text-blue-600 mb-4 text-center">
+          AI Job Matcher
+        </h1>
+        <p className="text-gray-600 text-center mb-8">
+          Upload your CV — we’ll extract your skills and find matching jobs using AI.
+        </p>
 
-        {/* User Info */}
-        <div className="p-6 space-y-4">
-          <div className="flex justify-between border-b border-gray-200 pb-3">
-            <span className="font-semibold text-black">Name:</span>
-            <span className="text-blue-600">{user?.name}</span>
-          </div>
-          <div className="flex justify-between border-b border-gray-200 pb-3">
-            <span className="font-semibold text-black">Email:</span>
-            <span className="text-blue-600">{user?.email}</span>
-          </div>
-          <div className="flex justify-between border-b border-gray-200 pb-3">
-            <span className="font-semibold text-black">User ID:</span>
-            <span className="text-blue-600">{user?.id}</span>
-          </div>
-        </div>
-
-        {/* Optional Actions */}
-        <div className="p-6 flex justify-end gap-4 border-t border-gray-200">
+        {/* Upload Section */}
+        <div className="border-2 border-dashed border-blue-300 rounded-xl p-8 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition">
+          <FaUpload className="text-4xl text-blue-500 mb-3" />
+          <input
+            type="file"
+            accept=".docx,.pdf"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="mb-3"
+          />
+          {file && (
+            <p className="text-sm text-gray-700">
+              Selected: <span className="font-semibold">{file.name}</span>
+            </p>
+          )}
           <button
-            onClick={() => {
-              localStorage.removeItem("token");
-              router.push("/auth/login");
-            }}
-            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition"
+            onClick={handleUpload}
+            disabled={uploading}
+            className={`mt-6 px-6 py-3 rounded-full font-semibold text-white ${
+              uploading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Logout
+            {uploading ? "Processing..." : "Upload & Analyze"}
           </button>
         </div>
+
+        {/* Error */}
+        {error && <p className="text-red-500 text-center mt-4 font-medium">{error}</p>}
+
+        {/* Extracted Skills */}
+        {keywords.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-2xl font-semibold text-blue-600 mb-3 text-center">
+              Extracted Skills
+            </h2>
+            <div className="flex flex-wrap justify-center gap-2">
+              {keywords.map((kw, i) => (
+                <span
+                  key={i}
+                  className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Job Recommendations */}
+        {jobs.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-semibold text-blue-600 mb-6 text-center">
+              Job Recommendations
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {jobs.map((job, index) => {
+                const isExpanded = expandedJob === index;
+                const description =
+                  job.description.length > 250 && !isExpanded
+                    ? job.description.slice(0, 250) + "..."
+                    : job.description;
+
+                return (
+                  <div
+                    key={job.id || index}
+                    className="bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition p-5 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <FaBriefcase className="text-blue-600 text-xl" />
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          {job.title}
+                        </h3>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                        {description}
+                      </p>
+                      {job.description.length > 250 && (
+                        <button
+                          onClick={() =>
+                            setExpandedJob(isExpanded ? null : index)
+                          }
+                          className="text-blue-500 text-sm font-medium hover:underline"
+                        >
+                          {isExpanded ? "Show less" : "Read more"}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-sm text-blue-500 font-semibold mt-4">
+                      Match Score: {(job.score * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!uploading && keywords.length === 0 && (
+          <p className="text-center text-gray-400 text-sm mt-10">
+            Upload your CV to discover job matches.
+          </p>
+        )}
       </div>
     </div>
   );

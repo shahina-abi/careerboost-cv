@@ -28,7 +28,8 @@
     "node-fetch": "^3.3.2",
     "node.js": "^0.0.1-security",
     "nodemon": "^3.1.10",
+    "openai": "^6.8.1",
     "path": "^0.12.7",
-    "pdf-parse": "^2.1.6"
+    "pdf-parse": "^1.1.0"
   }
 }

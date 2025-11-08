@@ -194,14 +194,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 sm:px-8 lg:px-12 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-black font-light tracking-wide">
-            © 2025 CareerBoost. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      
     </div>
   );
 }

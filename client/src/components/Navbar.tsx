@@ -1,42 +1,65 @@
+
+
+// export default Navbar;
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Menu, X, User } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/images/logo.png";
 import { usePathname } from "next/navigation";
-const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const router = useRouter();
+import { Menu, X, User } from "lucide-react";
 
-  // ✅ Check token on client side
+export default function Navbar() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const pathname = usePathname();
+
+  // ✅ Detect click outside dropdown
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ✅ Check authentication
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
+      // Optional: fetch user info
+      fetch("http://localhost:3001/api/v1/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => setUser(data.user))
+        .catch(() => {});
     }
   }, []);
 
-  const handleProfileClick = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      router.push("/dashboard");
-    } else {
-      router.push("/auth/login");
-    }
+  // ✅ Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    setUser(null);
+    window.location.href = "/auth/login";
   };
 
-  const pathname = usePathname();
   const linkClasses = (path: string) =>
     pathname === path
       ? "text-blue-500 hover:text-blue-800 transition"
       : "hover:text-blue-800 transition";
 
   return (
-    <header className="w-full py-4 px-6 md:px-20 absolute top-0 left-0 z-50  backdrop-blur-md">
+    <header className="w-full py-4 px-6 md:px-20 absolute top-0 left-0 z-50 backdrop-blur-md">
       <div className="flex justify-between items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center">
@@ -51,62 +74,102 @@ const Navbar: React.FC = () => {
           <h1 className="text-blue-600 text-2xl font-bold ml-2">CareerBoost</h1>
         </Link>
 
-
-
         {/* Desktop Menu */}
         <nav className="hidden lg:flex gap-10 text-lg font-semibold">
-          <Link href="/" className={linkClasses("/")}>Home</Link>
-          <Link href="/about" className={linkClasses("/about")}>About</Link>
-          <Link href="/contact" className={linkClasses("/contact")}>Contact Us</Link>
+          <Link href="/" className={linkClasses("/")}>
+            Home
+          </Link>
+          <Link href="/about" className={linkClasses("/about")}>
+            About
+          </Link>
+          <Link href="/contact" className={linkClasses("/contact")}>
+            Contact Us
+          </Link>
         </nav>
 
-        {/* Auth + Profile */}
-        <div className="hidden lg:flex items-center gap-4">
-          {!isLoggedIn && (
+        {/* Buttons or Profile */}
+        <div className="flex items-center gap-3 relative" ref={menuRef}>
+          {isAuthenticated ? (
+            <div className="relative">
+              {/* Avatar button */}
+             <button
+  onClick={() => setMenuOpen(!menuOpen)}
+  className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition"
+>
+  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200">
+    <User className="w-5 h-5 text-gray-700" />
+  </div>
+  <span className="font-semibold text-gray-700">
+    {user?.name?.split(" ")[0] || "User"}
+  </span>
+</button>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-xl border border-gray-100"
+                  >
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold">{user?.name}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                    <ul className="p-2">
+                      <li>
+                        <Link
+                          href="/dashboard"
+                          className="block px-3 py-2 rounded-lg hover:bg-gray-100 transition"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          My Dashboard
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/profile"
+                          className="block px-3 py-2 rounded-lg hover:bg-gray-100 transition"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Edit Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
             <>
-              <Link href="/auth/login" className="px-5 py-2 bg-gray-600 text-white rounded-3xl hover:bg-gray-700 transition">Login</Link>
-              <Link href="/auth/signup" className="px-5 py-2 bg-blue-600 text-white rounded-3xl hover:bg-blue-700 transition">Sign Up</Link>
+              <Link
+                href="/auth/login"
+                className="px-5 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition"
+              >
+                Login
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+              >
+                Sign Up
+              </Link>
             </>
           )}
-
-          <button
-            onClick={handleProfileClick}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
-            aria-label="Profile"
-          >
-            <User size={26} className="text-blue-600" />
-          </button>
         </div>
-
-        {/* Mobile Menu Button */}
-        <button className="lg:hidden p-2" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Menu">
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
       </div>
-
-      {/* Mobile Dropdown */}
-      {isOpen && (
-        <div className="lg:hidden mt-4 bg-white shadow-md rounded-lg p-4 flex flex-col gap-4 text-center">
-          <Link href="/" onClick={() => setIsOpen(false)} className="text-blue-600 font-semibold hover:text-blue-800">Home</Link>
-          <Link href="/about" onClick={() => setIsOpen(false)} className="hover:text-blue-800">About</Link>
-          <Link href="/contact" onClick={() => setIsOpen(false)} className="hover:text-blue-800">Contact</Link>
-
-          <div className="flex flex-col gap-3 mt-3">
-            {!isLoggedIn && (
-              <>
-                <Link href="/auth/login" onClick={() => setIsOpen(false)} className="px-5 py-2 bg-gray-600 text-white rounded-3xl hover:bg-gray-700">Login</Link>
-                <Link href="/auth/signup" onClick={() => setIsOpen(false)} className="px-5 py-2 bg-blue-600 text-white rounded-3xl hover:bg-blue-700">Sign Up</Link>
-              </>
-            )}
-
-            <button onClick={() => { setIsOpen(false); handleProfileClick(); }} className="flex justify-center items-center gap-2 text-blue-600 font-semibold hover:text-blue-800 mt-2">
-              <User size={22} /> Profile
-            </button>
-          </div>
-        </div>
-      )}
     </header>
   );
-};
-
-export default Navbar;
+}

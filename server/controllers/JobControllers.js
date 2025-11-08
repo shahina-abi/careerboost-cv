@@ -1,47 +1,78 @@
-import natural from "natural";
 
-// Example job data (can later be replaced with DB or external API)
-const jobs = [
-  { id: 1, title: "Frontend Developer", description: "Build user interfaces using React and CSS." },
-  { id: 2, title: "Backend Developer", description: "Develop REST APIs with Node.js and Express." },
-  { id: 3, title: "Data Scientist", description: "Analyze data and build ML models in Python." },
-  { id: 4, title: "Full Stack Engineer", description: "Work with frontend and backend technologies." },
-  { id: 5, title: "DevOps Engineer", description: "Manage CI/CD pipelines and cloud infrastructure." },
-];
+import axios from "axios";
+import { getEmbedding } from "../helpers/embeddings.js";
 
-// Function: Cosine similarity
-function getSimilarityScore(str1, str2) {
-  const tokenizer = new natural.WordTokenizer();
-  const tokensA = tokenizer.tokenize(str1.toLowerCase());
-  const tokensB = tokenizer.tokenize(str2.toLowerCase());
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
-  const allTokens = Array.from(new Set([...tokensA, ...tokensB]));
-  const vectorA = allTokens.map((t) => tokensA.includes(t) ? 1 : 0);
-  const vectorB = allTokens.map((t) => tokensB.includes(t) ? 1 : 0);
-
-  const dotProduct = vectorA.reduce((sum, a, i) => sum + a * vectorB[i], 0);
-  const magnitudeA = Math.sqrt(vectorA.reduce((sum, val) => sum + val ** 2, 0));
-  const magnitudeB = Math.sqrt(vectorB.reduce((sum, val) => sum + val ** 2, 0));
-
-  return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
+// Cosine similarity
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] ** 2;
+    magB += b[i] ** 2;
+  }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 }
 
-// Controller: fetch related jobs
-export const getRelatedJobs = (req, res) => {
-  const query = req.query.query?.toLowerCase();
-  if (!query) return res.status(400).json({ message: "Please provide a job title or keyword." });
+// Controller: Fetch real jobs + match by embedding
+export const getRelatedJobs = async (req, res) => {
+  try {
+    const query = req.query.query?.trim();
+    if (!query)
+      return res.status(400).json({ error: "Please provide a keyword." });
 
-  // Compute similarity
-  const scoredJobs = jobs.map((job) => ({
-    ...job,
-    score: getSimilarityScore(query, job.title + " " + job.description),
-  }));
+    console.log("🔍 Fetching jobs for:", query);
 
-  // Sort and return top matches
-  const results = scoredJobs
-    .filter((j) => j.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    // Step 1: Fetch live jobs from RapidAPI
+    const options = {
+      method: "GET",
+      url: "https://jsearch.p.rapidapi.com/search",
+      params: {
+        query: `${query} developer`,
+        page: "1",
+        num_pages: "1",
+      },
+      headers: {
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+      },
+    };
 
-  res.json({ query, results });
+    const { data } = await axios.request(options);
+    const jobs = data.data?.slice(0, 10) || [];
+
+    if (!jobs.length) {
+      return res.status(404).json({ error: "No jobs found for this query." });
+    }
+
+    // Step 2: Create embedding for the user query
+    const queryEmbedding = await getEmbedding(query);
+
+    // Step 3: Compute similarity with each job
+    const scoredJobs = await Promise.all(
+      jobs.map(async (job) => {
+        const jobText = `${job.job_title} ${job.job_description}`.slice(0, 500);
+        const jobEmbedding = await getEmbedding(jobText);
+        const score = cosineSimilarity(queryEmbedding, jobEmbedding);
+        return {
+          id: job.job_id,
+          title: job.job_title,
+          company: job.employer_name,
+          location: job.job_city || job.job_country || "Remote",
+          description: job.job_description,
+          url: job.job_apply_link,
+          score,
+        };
+      })
+    );
+
+    // Step 4: Sort & return best matches
+    const sorted = scoredJobs.sort((a, b) => b.score - a.score).slice(0, 5);
+
+    res.json({ query, results: sorted });
+  } catch (err) {
+    console.error("❌ Job matching error:", err.message);
+    res.status(500).json({ error: "Failed to fetch or process jobs." });
+  }
 };
