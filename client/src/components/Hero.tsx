@@ -10,8 +10,8 @@ export default function Hero() {
           Upload your CV, let AI enhance it, and get personalized job matches. Smarter job search starts here.
         </p></Link>
         <div className="flex gap-6 mt-6">
-          <button className="h-16 px-7 py-2.5 bg-blue-600 text-white font-bold rounded-[50px]">Upload Your CV</button>
-     <Link href='/'>    <button className="h-16 px-7 py-2.5 bg-gray-600 text-white font-bold rounded-[50px]">Get Start</button></Link>
+         <Link href='/dashboard'> <button className="h-16 px-7 py-2.5 bg-blue-600 text-white font-bold rounded-[50px]">Upload Your CV</button></Link>
+     <Link href='/dashboard'>    <button className="h-16 px-7 py-2.5 bg-gray-600 text-white font-bold rounded-[50px]">Get Start</button></Link>
         </div>
       </div>
       <img src="/images/manwithlap.png" alt="Hero image" className="w-[500px] mt-10 lg:mt-0" />
