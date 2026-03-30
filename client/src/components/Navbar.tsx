@@ -36,7 +36,7 @@ export default function Navbar() {
     if (token) {
       setIsAuthenticated(true);
       // Optional: fetch user info
-      fetch("http://localhost:3001/api/v1/users/me", {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())

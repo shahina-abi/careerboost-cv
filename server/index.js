@@ -11,7 +11,7 @@ const app = express();
 // console.log("Hugging Face key loaded:", !!process.env.HF_API_KEY);
 // console.log("Loaded HF_API_KEY:", process.env.HF_API_KEY?.slice(0, 10) + "...");
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
 // app.use("/uploads/cvs", express.static("uploads/cvs"));
 app.use(express.json());
 app.use(cookieParser());

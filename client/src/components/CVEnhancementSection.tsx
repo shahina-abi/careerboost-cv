@@ -18,7 +18,7 @@ export default function CVEnhancementSection() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3001/api/v1/cv/enhance", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/cv/enhance`, {
         method: "POST",
         body: formData,
       });

@@ -31,7 +31,7 @@ const [enhancedHtml, setEnhancedHtml] = useState("");
       formData.append("cv", file);
 
       // Upload CV
-      const res = await fetch("http://localhost:3001/api/v1/cv/upload", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/cv/upload`, {
         method: "POST",
         body: formData,
       });
@@ -45,7 +45,7 @@ const [enhancedHtml, setEnhancedHtml] = useState("");
       // Get related jobs
       if (cvKeywords.length > 0) {
         const jobRes = await fetch(
-          `http://localhost:3001/api/v1/jobs?query=${encodeURIComponent(cvKeywords[0])}`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/jobs?query=${encodeURIComponent(cvKeywords[0])}`
         );
         const jobData = await jobRes.json();
         if (!jobRes.ok) throw new Error(jobData.error || "Failed to fetch jobs");
@@ -70,7 +70,7 @@ const handleEnhanceCV = async () => {
     formData.append("cv", file);
 
     console.log("🚀 Enhancing CV using Lima API...");
-    const res = await fetch("http://localhost:3001/api/v1/cv/enhance", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/cv/enhance`, {
       method: "POST",
       body: formData,
     });
