@@ -7,7 +7,7 @@ import axios from "axios";
 import path from "path";
 import mammoth from "mammoth";
 import multer from "multer";
-import pdf from "pdf-parse/lib/pdf-parse.js";
+import pdf from "pdf-parse";
 import dotenv from "dotenv";
 
 import { getEmbedding } from "../helpers/embeddings.js";
@@ -101,7 +101,7 @@ export const enhanceCV = async (req, res) => {
     console.log("🚀 Sending request to GROQ...");
 
     const response = await client.chat.completions.create({
-     model: "llama-3.3-70b-versatile",
+      model: "llama-3.3-70b-versatile",
 
       messages: [
         {
@@ -117,7 +117,7 @@ export const enhanceCV = async (req, res) => {
     res.json({ enhancedText: enhanced });
 
     // delete uploaded file
-    fs.unlink(filePath, () => {});
+    fs.unlink(filePath, () => { });
   } catch (err) {
     console.error("❌ CV ENHANCEMENT ERROR:", err);
     res.status(500).json({
