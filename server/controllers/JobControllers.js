@@ -6,12 +6,15 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
 // Cosine similarity
 function cosineSimilarity(a, b) {
+  if (!a || !b || !Array.isArray(a) || !Array.isArray(b)) return 0;
   let dot = 0, magA = 0, magB = 0;
-  for (let i = 0; i < a.length; i++) {
+  const len = Math.min(a.length, b.length);
+  for (let i = 0; i < len; i++) {
     dot += a[i] * b[i];
     magA += a[i] ** 2;
     magB += b[i] ** 2;
   }
+  if (magA === 0 || magB === 0) return 0;
   return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 }
 
